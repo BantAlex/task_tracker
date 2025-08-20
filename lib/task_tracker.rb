@@ -7,7 +7,7 @@ class TaskTracker
   attr_accessor :tasks, :to_do
 
   def initialize(tasks = {},to_do = [])
-    puts "          >Task Tracker v0.3<          "
+    puts "          >Task Tracker v0.5<          "
     puts "\n"
     @tasks = tasks
     @to_do = to_do
@@ -25,6 +25,7 @@ class TaskTracker
     if File.file?('lib/task_data.json')
       file = File.read('lib/task_data.json') #Read the current tasks if file exists
       @tasks = JSON.parse(file)
+      @tasks.each {|k,v| @to_do << @tasks[k]["to_do"]}
     else
       File.open('lib/task_data.json','w') do |file|
         file = file.write(JSON.pretty_generate(@tasks)) #Create an empty JSON if not
@@ -39,10 +40,10 @@ class TaskTracker
     puts "add - Add new Task (add Do the maid)"
     puts "2 - Delete Task"#Either by ID or string #TODO
     puts "3 - Update task" #TODO
-    puts "4 - Show all tasks" #TODO
+    puts "showall - Show all tasks"
     puts "5 - Show all tasks marked as Done" #TODO
     puts "6 - Show all tasks marked as Undone" #TODO
-    puts "7 - Exit"
+    puts "exit - Close Task Tracker"
     puts "======================================="
     puts "\n"
 
