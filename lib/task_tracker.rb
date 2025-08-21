@@ -1,7 +1,7 @@
 require 'json'
-#TODO Refactor to not need number of object AND ID
-#TODO Delete Task
+#TODO If you add and delete the task b2b, it throws an error
 #TODO Properties of each task(hash instead of array). Id,descreption,status(done/todo,progress),created and update date.
+#TODO Add option to delete via ID
 #TODO List all Done/Undone tasks on their own
 #TODO Make the tasks appear vertically instead of an array
 class TaskTracker
@@ -9,7 +9,6 @@ class TaskTracker
 
   def initialize(tasks = [],to_do = [])
     puts "          >Task Tracker v0.5<          "
-    puts "\n"
     @tasks = tasks
     @to_do = to_do
     file?
@@ -26,7 +25,7 @@ class TaskTracker
     if File.file?('lib/task_data.json')
       file = File.read('lib/task_data.json') #Read the current tasks if file exists
       @tasks = JSON.parse(file)
-      @tasks.each {|k,v| @to_do << @tasks[k]["to_do"]}
+      @tasks.each {|task| @to_do << task["to_do"]}
     else
       File.open('lib/task_data.json','w') do |file|
         file = file.write(JSON.pretty_generate(@tasks)) #Create an empty JSON if not
@@ -35,6 +34,7 @@ class TaskTracker
   end
 
   def menu
+    puts "\n"
     puts "=============== M E N U ==============="
     # task_list(@tasks) #TODO See method
     puts "\n"
@@ -79,18 +79,16 @@ class TaskTracker
     update_list
   end
 
-   def delete_task(task_or_id)
-    puts "There is no such tasks in the To Do list." if @to_do.included?(task_or_id)   #TODO
-    @tasks.each do |id|
-      puts "YES!" if id[1]["to_do"].downcase == task_or_id.downcase
-      puts id
-      id.delete(id) if id[1]["to_do"].downcase == task_or_id.downcase
+   def delete_task(task_or_id) #TODO ID Does not work
+    puts "There is no such tasks in the To Do list." if !@to_do.include?(task_or_id)   #TODO
+
+    @tasks.each_with_index do |task,index|
+      @tasks.delete_at(index) if task["to_do"].downcase == task_or_id.downcase
     end
+    @to_do.each_with_index{|task,index| @to_do.delete_at(index) if task_or_id == task}
+
     update_list
-    puts @tasks
-    # show_all
-    #TODO Either make the user write the actual task or number them.
-    #TODO Remove the task from the array and update the file
+    show_all
    end
 
   def show_all #TODO Make it look better
