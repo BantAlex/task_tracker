@@ -1,4 +1,5 @@
 require 'json'
+#TODO Refactor to not need number of object AND ID
 #TODO Delete Task
 #TODO Properties of each task(hash instead of array). Id,descreption,status(done/todo,progress),created and update date.
 #TODO List all Done/Undone tasks on their own
@@ -6,7 +7,7 @@ require 'json'
 class TaskTracker
   attr_accessor :tasks, :to_do
 
-  def initialize(tasks = {},to_do = [])
+  def initialize(tasks = [],to_do = [])
     puts "          >Task Tracker v0.5<          "
     puts "\n"
     @tasks = tasks
@@ -37,8 +38,8 @@ class TaskTracker
     puts "=============== M E N U ==============="
     # task_list(@tasks) #TODO See method
     puts "\n"
-    puts "add - Add new Task (add Do the maid)"
-    puts "2 - Delete Task"#Either by ID or string #TODO
+    puts "add [task] - Add new Task"
+    puts "delete [task or id] - Delete a Task"#Either by ID or string #TODO
     puts "3 - Update task" #TODO
     puts "showall - Show all tasks"
     puts "5 - Show all tasks marked as Done" #TODO
@@ -51,7 +52,7 @@ class TaskTracker
     action = gets.downcase.split
     case action[0]
       when "add" then add_task(action.drop(1).join(" "))
-      when "delete" then puts "Coming Soon!"
+      when "delete" then delete_task(action.drop(1).join(" "))
       when "update" then puts "Coming Soon!"
       when "showall" then puts show_all
       when "done" then puts "Coming Soon!"
@@ -65,19 +66,32 @@ class TaskTracker
 
   def add_task(task)
     task_id = @to_do.length + 1
-    @tasks[task_id] = {}
-
-    @tasks[task_id][:to_do] = task
-    @tasks[task_id][:id] = @to_do.length + 1
-    @tasks[task_id][:progress] = "0%"
-    @tasks[task_id][:status] = "to_do"
-    @tasks[task_id][:created_at] = Time.now
-    @tasks[task_id][:updated_at] = Time.now
-
-
+    new_task = {
+        to_do: task,
+        id: task_id,
+        progress: "0%",
+        status: "to_do",
+        created_at: Time.now,
+        updated_at: Time.now
+    }
+    @tasks << new_task
     @to_do << task
     update_list
   end
+
+   def delete_task(task_or_id)
+    puts "There is no such tasks in the To Do list." if @to_do.included?(task_or_id)   #TODO
+    @tasks.each do |id|
+      puts "YES!" if id[1]["to_do"].downcase == task_or_id.downcase
+      puts id
+      id.delete(id) if id[1]["to_do"].downcase == task_or_id.downcase
+    end
+    update_list
+    puts @tasks
+    # show_all
+    #TODO Either make the user write the actual task or number them.
+    #TODO Remove the task from the array and update the file
+   end
 
   def show_all #TODO Make it look better
     print @to_do
@@ -89,12 +103,7 @@ class TaskTracker
     end
   end
 
-  def delete_task(task)
-    #TODO Read through the file and make it into an array
-    #TODO Warn if the task list is emptys
-    #TODO Either make the user write the actual task or number them.
-    #TODO Remove the task from the array and update the file
-  end
+
 
   def update_task
 
