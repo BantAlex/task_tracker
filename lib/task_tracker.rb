@@ -3,13 +3,15 @@ require 'json'
 #TODO List all Done/Undone tasks on their own
 #TODO Tasks can somehow have the same ID (maybe)
 #TODO Make the tasks appear vertically instead of an array
+#TODO Take care of the file?, update_file and read_file trio.
 class TaskTracker
   attr_accessor :tasks, :to_do
 
   def initialize(tasks = [],to_do = [])
     puts "          >Task Tracker v0.5<          "
-    @tasks = tasks
-    @to_do = to_do
+    @tasks = []
+    @to_do = []
+    update_file
     file?
     menu
   end
@@ -38,6 +40,7 @@ class TaskTracker
     puts "delete id [id] - Delete a Task via ID"
     puts "delete [task] - Delete a Task via description"
     puts "3 - Update task" #TODO
+    puts "clearlist - To reset your Tasks"
     puts "showall - Show all tasks"
     puts "5 - Show all tasks marked as Done" #TODO
     puts "6 - Show all tasks marked as Undone" #TODO
@@ -46,16 +49,19 @@ class TaskTracker
 
     print "Choose your action:"
     action = gets.split
-    case action[0]
+    case action[0].downcase
       when "add" then add_task(action.drop(1).join(" "))
 
       when "delete"
-        if action[1].downcase == "id"
-          delete_task(nil,action.drop(2).join(" "))
-        else
-          delete_task(action.drop(1).join(" "),nil)
+        if action[1]
+          if action[1].downcase == "id"
+            delete_task(nil,action.drop(2).join(" "))
+          else
+            delete_task(action.drop(1).join(" "),nil)
+          end
         end
 
+      when "clearlist" then clear_list
       when "update" then puts "Coming Soon!"
       when "showall" then puts show_all
       when "done" then puts "Coming Soon!"
@@ -129,6 +135,10 @@ class TaskTracker
 
   def clear_list
     #TODO Warn first
+    puts "Are you sure?(y/n)"
+    terminate = gets.chomp.downcase
+    initialize if terminate == "y"
+    menu if terminate == "n"
   end
 
 end
