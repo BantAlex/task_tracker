@@ -1,8 +1,7 @@
 require 'json'
-#TODO If you add and delete the task b2b, it throws an error
-#TODO Properties of each task(hash instead of array). Id,descreption,status(done/todo,progress),created and update date.
-#TODO Add option to delete via ID
+#TODO Issues arise when you have tasks with the same description - It will delete the first one
 #TODO List all Done/Undone tasks on their own
+#TODO Tasks can somehow have the same ID (maybe)
 #TODO Make the tasks appear vertically instead of an array
 class TaskTracker
   attr_accessor :tasks, :to_do
@@ -15,17 +14,16 @@ class TaskTracker
     menu
   end
 
-  def task_list(array) #TODO Make the tasks appear vertically instead of an array
-    puts "Current Tasks:#{array}" if !array.empty? #TODO Convert Hash into an array first and only output the tasks
-    puts "You don't have any tasks yet. Good Job!" if array.empty?
+  def read_file
+    file = File.read('lib/task_data.json')
+    @tasks = JSON.parse(file)
+    @tasks.each {|task| @to_do << task["to_do"]}
+    @to_do = @to_do.uniq
   end
 
-
   def file?
-    if File.file?('lib/task_data.json')
-      file = File.read('lib/task_data.json') #Read the current tasks if file exists
-      @tasks = JSON.parse(file)
-      @tasks.each {|task| @to_do << task["to_do"]}
+    if File.file?('lib/task_data.json') #Read the current tasks if file exists
+      read_file
     else
       File.open('lib/task_data.json','w') do |file|
         file = file.write(JSON.pretty_generate(@tasks)) #Create an empty JSON if not
@@ -34,25 +32,30 @@ class TaskTracker
   end
 
   def menu
-    puts "\n"
+    update_file
     puts "=============== M E N U ==============="
-    # task_list(@tasks) #TODO See method
-    puts "\n"
     puts "add [task] - Add new Task"
-    puts "delete [task or id] - Delete a Task"#Either by ID or string #TODO
+    puts "delete id [id] - Delete a Task via ID"
+    puts "delete [task] - Delete a Task via description"
     puts "3 - Update task" #TODO
     puts "showall - Show all tasks"
     puts "5 - Show all tasks marked as Done" #TODO
     puts "6 - Show all tasks marked as Undone" #TODO
     puts "exit - Close Task Tracker"
     puts "======================================="
-    puts "\n"
 
     print "Choose your action:"
-    action = gets.downcase.split
+    action = gets.split
     case action[0]
       when "add" then add_task(action.drop(1).join(" "))
-      when "delete" then delete_task(action.drop(1).join(" "))
+
+      when "delete"
+        if action[1].downcase == "id"
+          delete_task(nil,action.drop(2).join(" "))
+        else
+          delete_task(action.drop(1).join(" "),nil)
+        end
+
       when "update" then puts "Coming Soon!"
       when "showall" then puts show_all
       when "done" then puts "Coming Soon!"
@@ -65,40 +68,57 @@ class TaskTracker
   end
 
   def add_task(task)
-    task_id = @to_do.length + 1
+    @to_do << task
+
     new_task = {
-        to_do: task,
-        id: task_id,
+        to_do: task.downcase,
+        id: @to_do.length,
         progress: "0%",
         status: "to_do",
         created_at: Time.now,
         updated_at: Time.now
     }
+
     @tasks << new_task
-    @to_do << task
-    update_list
+    update_file
+    show_all
   end
 
-   def delete_task(task_or_id) #TODO ID Does not work
-    puts "There is no such tasks in the To Do list." if !@to_do.include?(task_or_id)   #TODO
+   def delete_task(via_task,via_id)
 
-    @tasks.each_with_index do |task,index|
-      @tasks.delete_at(index) if task["to_do"].downcase == task_or_id.downcase
+    if via_task
+      puts "There are no such tasks in the To Do list." if !@to_do.include?(via_task)
+      @tasks.each_with_index do |task,index|
+        @tasks.delete_at(index) if task["to_do"] == via_task
+      end
+      @to_do.each_with_index{|task,index| @to_do.delete_at(index) if task == via_task}
     end
-    @to_do.each_with_index{|task,index| @to_do.delete_at(index) if task_or_id == task}
 
-    update_list
+    if via_id
+      @tasks.each_with_index do |task,index|
+        if task["id"].to_i == via_id.to_i
+          @tasks.delete_at(index)
+          @to_do = [] #Reset the to_do array to input the new info
+          @tasks.each {|task| @to_do << task["to_do"]} #Input the new info in
+        end
+      end
+      # puts "There is no such ID in the To Do list."
+    end
+
+    update_file
     show_all
    end
 
   def show_all #TODO Make it look better
     print @to_do
+    puts "\n"
   end
 
-  def update_list
+  def update_file #^No Idea why this works
     File.open('lib/task_data.json','w') do |file|
         file = file.write(JSON.pretty_generate(@tasks)) #Update the file
     end
+    read_file #^No Idea why this works
   end
 
 
