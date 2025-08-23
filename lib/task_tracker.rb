@@ -4,15 +4,18 @@ require 'json'
 #TODO Tasks can somehow have the same ID (maybe)
 #TODO Make the tasks appear vertically instead of an array
 #TODO Take care of the file?, update_file and read_file trio.
+#TODO README
 class TaskTracker
   attr_accessor :tasks, :to_do
 
-  def initialize(tasks = [],to_do = [])
+  def initialize
     puts "          >Task Tracker v0.5<          "
     @tasks = []
     @to_do = []
-    update_file
+
+    read_file
     file?
+    update_file
     menu
   end
 
@@ -134,9 +137,9 @@ class TaskTracker
   end
 
   def clear_list
-    #TODO Warn first
     puts "Are you sure?(y/n)"
     terminate = gets.chomp.downcase
+
     initialize if terminate == "y"
     menu if terminate == "n"
   end
