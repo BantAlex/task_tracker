@@ -13,7 +13,6 @@ class TaskTracker
     @tasks = []
     @to_do = []
 
-    read_file
     file?
     update_file
     menu
@@ -140,8 +139,16 @@ class TaskTracker
     puts "Are you sure?(y/n)"
     terminate = gets.chomp.downcase
 
-    initialize if terminate == "y"
-    menu if terminate == "n"
+    if terminate == "y"
+      @tasks = []
+      @to_do = []
+      update_file
+      menu
+    elsif terminate == "n"
+      menu
+    else
+      puts "Not a Valid Option"
+    end
   end
 
 end
