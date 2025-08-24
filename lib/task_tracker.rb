@@ -1,9 +1,13 @@
 require 'json'
+#TODO Update task
 #TODO Issues arise when you have tasks with the same description - It will delete the first one
 #TODO List all Done/Undone tasks on their own
-#TODO Tasks can somehow have the same ID (maybe)
+#TODO Tasks can somehow have the same ID if you delete and add one.(because it counts how many there are)
 #TODO Make the tasks appear vertically instead of an array
 #TODO Take care of the file?, update_file and read_file trio.
+#TODO Try removing @to_do its kinda of reduntand. Only use-case is that you won't have to loop over the hash.
+#TODO Make the tasks appear as typed maybe?
+#TODO Status option needs improvemenent
 #TODO README
 class TaskTracker
   attr_accessor :tasks, :to_do
@@ -41,11 +45,11 @@ class TaskTracker
     puts "add [task] - Add new Task"
     puts "delete id [id] - Delete a Task via ID"
     puts "delete [task] - Delete a Task via description"
-    puts "3 - Update task" #TODO
-    puts "clearlist - To reset your Tasks"
+    puts "update - Update a Task"
     puts "showall - Show all tasks"
-    puts "5 - Show all tasks marked as Done" #TODO
-    puts "6 - Show all tasks marked as Undone" #TODO
+    puts "done - Show all tasks marked as Done"
+    puts "todo - Show all tasks marked as Undone"
+    puts "clearlist - To reset your Tasks"
     puts "exit - Close Task Tracker"
     puts "======================================="
 
@@ -63,12 +67,11 @@ class TaskTracker
           end
         end
 
+      when "update" then update_task
+      when "showall" then show_all
+      when "done" then show_done
+      when "todo" then show_undone
       when "clearlist" then clear_list
-      when "update" then puts "Coming Soon!"
-      when "showall" then puts show_all
-      when "done" then puts "Coming Soon!"
-      when "list" then puts "Coming Soon!"
-      when "todo" then puts "Coming Soon!"
       when "exit" then exit
       else puts "Invalid Option"
     end
@@ -80,9 +83,8 @@ class TaskTracker
 
     new_task = {
         to_do: task.downcase,
-        id: @to_do.length,
-        progress: "0%",
-        status: "to_do",
+        id: @to_do.length, #^Maybe make it have the length of the last element's ID + 1?
+        status: "to do",
         created_at: Time.now,
         updated_at: Time.now
     }
@@ -118,8 +120,7 @@ class TaskTracker
    end
 
   def show_all #TODO Make it look better
-    print @to_do
-    puts "\n"
+    @tasks.each {|task| puts "#{task["id"]} - #{task["to_do"]} - #{task["status"]}"}
   end
 
   def update_file #^No Idea why this works
@@ -129,10 +130,36 @@ class TaskTracker
     read_file #^No Idea why this works
   end
 
-
-
   def update_task
+    puts "Wich task would you like to update the progress of?([task ID] [done/to do])"
+    show_all
+    id_to_update = gets.split
+    status = id_to_update.drop(1).join(" ").downcase
+    valid_status = ["done","to do"]
 
+    @tasks.each do |task|
+      if task["id"].to_i == id_to_update[0].to_i
+        if valid_status.include?(status)
+          task["status"] = status
+          task["updated_at"] = Time.now
+          update_file
+          menu
+        else
+          puts "#{status} is not a valid status."
+          menu
+        end
+      end
+    end
+    puts "#{id_to_update[0]} is not a valid ID"
+    menu
+  end
+
+  def show_done
+    @tasks.each {|task| puts "#{task["id"]} - #{task["to_do"]} - #{task["status"]}" if task["status"] == "done"}
+  end
+
+  def show_undone
+    @tasks.each {|task| puts "#{task["id"]} - #{task["to_do"]} - #{task["status"]}" if task["status"] == "to do"}
   end
 
   def clear_list
