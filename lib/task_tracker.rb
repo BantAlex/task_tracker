@@ -4,12 +4,12 @@ require 'json'
 #TODO Take care of the file?, update_file and read_file trio.
 #TODO Make the tasks appear as typed case-wise maybe?
 #TODO Status option needs improvemenent
-#TODO README
+#TODO #updated/created at
 class TaskTracker
   attr_accessor :tasks
 
   def initialize
-    puts "          >Task Tracker v0.9<          "
+    puts "          >Task Tracker v1.0<          "
     @tasks = []
 
     file?
