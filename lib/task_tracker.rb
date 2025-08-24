@@ -1,21 +1,16 @@
 require 'json'
-#TODO Update task
 #TODO Issues arise when you have tasks with the same description - It will delete the first one
-#TODO List all Done/Undone tasks on their own
-#TODO Tasks can somehow have the same ID if you delete and add one.(because it counts how many there are)
-#TODO Make the tasks appear vertically instead of an array
+#TODO Tasks can somehow have the same ID if you delete and add one.(because it counts @tasks.length)
 #TODO Take care of the file?, update_file and read_file trio.
-#TODO Try removing @to_do its kinda of reduntand. Only use-case is that you won't have to loop over the hash.
-#TODO Make the tasks appear as typed maybe?
+#TODO Make the tasks appear as typed case-wise maybe?
 #TODO Status option needs improvemenent
 #TODO README
 class TaskTracker
-  attr_accessor :tasks, :to_do
+  attr_accessor :tasks
 
   def initialize
-    puts "          >Task Tracker v0.5<          "
+    puts "          >Task Tracker v0.9<          "
     @tasks = []
-    @to_do = []
 
     file?
     update_file
@@ -25,8 +20,6 @@ class TaskTracker
   def read_file
     file = File.read('lib/task_data.json')
     @tasks = JSON.parse(file)
-    @tasks.each {|task| @to_do << task["to_do"]}
-    @to_do = @to_do.uniq
   end
 
   def file?
@@ -79,11 +72,9 @@ class TaskTracker
   end
 
   def add_task(task)
-    @to_do << task
-
     new_task = {
         to_do: task.downcase,
-        id: @to_do.length, #^Maybe make it have the length of the last element's ID + 1?
+        id: @tasks.length + 1, #^This will cause ID Dupes.
         status: "to do",
         created_at: Time.now,
         updated_at: Time.now
@@ -97,22 +88,27 @@ class TaskTracker
    def delete_task(via_task,via_id)
 
     if via_task
-      puts "There are no such tasks in the To Do list." if !@to_do.include?(via_task)
       @tasks.each_with_index do |task,index|
-        @tasks.delete_at(index) if task["to_do"] == via_task
+         if task["to_do"] == via_task
+           @tasks.delete_at(index)
+           task_found = true
+           puts "Task #{via_task} deleted succesfully"
+           menu
+         end
+         puts "#{via_task} does not exist in your list." if !task_found
       end
-      @to_do.each_with_index{|task,index| @to_do.delete_at(index) if task == via_task}
     end
 
     if via_id
       @tasks.each_with_index do |task,index|
         if task["id"].to_i == via_id.to_i
           @tasks.delete_at(index)
-          @to_do = [] #Reset the to_do array to input the new info
-          @tasks.each {|task| @to_do << task["to_do"]} #Input the new info in
+          id_found = true
+          puts "Task #{via_id} deleted succesfully"
+          menu
         end
+        puts "#{via_id} does not exist in your list." if !id_found
       end
-      # puts "There is no such ID in the To Do list."
     end
 
     update_file
@@ -168,7 +164,6 @@ class TaskTracker
 
     if terminate == "y"
       @tasks = []
-      @to_do = []
       update_file
       menu
     elsif terminate == "n"
