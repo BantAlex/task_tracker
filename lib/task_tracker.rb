@@ -1,9 +1,6 @@
 require 'json'
 #TODO Issues arise when you have tasks with the same description - It will delete the first one
-#TODO Tasks can somehow have the same ID if you delete and add one.(because it counts @tasks.length)
 #TODO Take care of the file?, update_file and read_file trio.
-#TODO Make the tasks appear as typed case-wise maybe?
-#TODO Status option needs improvemenent
 #TODO #updated/created at
 class TaskTracker
   attr_accessor :tasks
@@ -11,7 +8,6 @@ class TaskTracker
   def initialize
     puts "          >Task Tracker v1.0<          "
     @tasks = []
-
     file?
     update_file
     menu
@@ -72,9 +68,12 @@ class TaskTracker
   end
 
   def add_task(task)
+    generate_id = 1 if @tasks.empty?
+    generate_id = @tasks.last["id"].to_i + 1 if !@tasks.empty?
+
     new_task = {
-        to_do: task.downcase,
-        id: @tasks.length + 1, #^This will cause ID Dupes.
+        to_do: task,
+        id: generate_id,
         status: "to do",
         created_at: Time.now,
         updated_at: Time.now
@@ -89,7 +88,7 @@ class TaskTracker
 
     if via_task
       @tasks.each_with_index do |task,index|
-         if task["to_do"] == via_task
+         if task["to_do"].downcase == via_task.downcase
            @tasks.delete_at(index)
            task_found = true
            puts "Task #{via_task} deleted succesfully"
