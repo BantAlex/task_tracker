@@ -1,12 +1,10 @@
 require 'json'
-#TODO Issues arise when you have tasks with the same description - It will delete the first one
 #TODO Take care of the file?, update_file and read_file trio.
-#TODO #updated/created at
 class TaskTracker
   attr_accessor :tasks
 
   def initialize
-    puts "          >Task Tracker v1.0<          "
+    puts "          >Task Tracker v1.03<          "
     @tasks = []
     file?
     update_file
@@ -36,6 +34,7 @@ class TaskTracker
     puts "delete [task] - Delete a Task via description"
     puts "update - Update a Task"
     puts "showall - Show all tasks"
+    puts "showallupdates- Show all tasks with the last updated time"
     puts "done - Show all tasks marked as Done"
     puts "todo - Show all tasks marked as Undone"
     puts "clearlist - To reset your Tasks"
@@ -58,6 +57,7 @@ class TaskTracker
 
       when "update" then update_task
       when "showall" then show_all
+      when "showallupdates" then show_all_updates
       when "done" then show_done
       when "todo" then show_undone
       when "clearlist" then clear_list
@@ -114,15 +114,19 @@ class TaskTracker
     show_all
    end
 
-  def show_all #TODO Make it look better
+  def show_all
     @tasks.each {|task| puts "#{task["id"]} - #{task["to_do"]} - #{task["status"]}"}
   end
 
-  def update_file #^No Idea why this works
+  def show_all_updates
+    @tasks.each {|task| puts "#{task["id"]} - #{task["to_do"]} - #{task["status"]} - #{task["updated_at"]}"}
+  end
+
+  def update_file #^No Idea why this entangled mess works
     File.open('lib/task_data.json','w') do |file|
         file = file.write(JSON.pretty_generate(@tasks)) #Update the file
     end
-    read_file #^No Idea why this works
+    read_file #^No Idea why this entangled mess works
   end
 
   def update_task
