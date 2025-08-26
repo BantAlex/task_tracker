@@ -85,6 +85,8 @@ class TaskTracker
   end
 
    def delete_task(via_task,via_id)
+    id_found = false
+    task_found = false
 
     if via_task
       @tasks.each_with_index do |task,index|
@@ -94,8 +96,8 @@ class TaskTracker
            puts "Task #{via_task} deleted succesfully"
            menu
          end
-         puts "#{via_task} does not exist in your list." if !task_found
       end
+         puts "#{via_task} does not exist in your list." if !task_found
     end
 
     if via_id
@@ -106,12 +108,11 @@ class TaskTracker
           puts "Task #{via_id} deleted succesfully"
           menu
         end
-        puts "#{via_id} does not exist in your list." if !id_found
       end
+        puts "#{via_id} does not exist in your list." if !id_found
     end
 
     update_file
-    show_all
    end
 
   def show_all
